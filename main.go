@@ -2,7 +2,10 @@ package main
 
 import (
 	"container/heap"
-	"fmt"
+  "bufio"
+  "os"
+  "fmt"
+  "strconv"
 )
 
 type DLinkNode struct {
@@ -75,7 +78,10 @@ func (st *MaxStack) Push(x int)  {
 func (st *MaxStack) Pop() int {
 	head := st.queue
 	st.queue = head.Next
-	st.queue.Prev = nil
+
+  if st.queue != nil {
+	  st.queue.Prev = nil
+  }
 	heap.Remove(&(st.priori), head.Index)
 	return head.Value
 }
@@ -87,7 +93,7 @@ func (st MaxStack) Top() int {
 
 
 func (st *MaxStack) PeekMax() int {
-	return st.priori[len(st.priori)-1].Value
+	return st.priori[0].Value
 }
 
 
@@ -97,6 +103,9 @@ func (st *MaxStack) PopMax() int {
 
 	if node.Prev == nil {
 		st.queue = node.Next
+    if st.queue != nil {
+      st.queue.Prev = nil
+    }
 	} else {
 		prev := node.Prev
 		prev.Next = node.Next
@@ -123,16 +132,49 @@ func (st *MaxStack) PopMax() int {
 func main() {
 
 	maxStack := Constructor()
+  reader := bufio.NewReader(os.Stdin)
 
-	maxStack.Push(5)
-	maxStack.Push(1)
-	maxStack.Push(5)
+  L:
+  for true {
+    fmt.Println("What would you like to do?")
+    selection, err := reader.ReadBytes('\n')
 
-	fmt.Printf("Top %d\n", maxStack.Top())
-	fmt.Printf("Popped max %d\n", maxStack.PopMax())
-	fmt.Printf("Top %d\n", maxStack.Top())
-	fmt.Printf("Peeking max %d\n", maxStack.PeekMax())
-	fmt.Printf("Popped %d\n", maxStack.Pop())
-	fmt.Printf("Top %d\n", maxStack.Top())
+    selection = selection[:len(selection)-1]
+    if err != nil {
+      fmt.Println("Encountered an error, stopping")
+      break
+    }
 
+    switch string(selection) {
+      case "Push":
+        fmt.Println("Enter value to push")
+        value, err := reader.ReadBytes('\n')
+        if err != nil {
+          fmt.Println("Encountered an error, stopping")
+          break L
+        }
+        value = value[:len(value)-1]
+        toInt, err := strconv.Atoi(string(value))
+        if err != nil {
+          fmt.Println("Encountered an error, stopping")
+          break L
+        }
+
+        maxStack.Push(toInt)
+      case "Pop":
+        fmt.Printf("You popped %d\n", maxStack.Pop())
+      case "PopMax":
+        fmt.Printf("MaxPopped %d\n", maxStack.PopMax())
+      case "Top":
+        fmt.Printf("Top %d\n", maxStack.Top())
+      case "PeekMax":
+        fmt.Printf("Max right now %d\n", maxStack.PeekMax())
+      case "q":
+        break L  
+      default:
+        fmt.Println("Gave a non known command, try again")
+    }
+  }
+
+ 
 }
